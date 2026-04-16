@@ -1,0 +1,47 @@
+{
+  "common": {
+    "appName": "FineZ",
+    "search": "Search",
+    "search_placeholder": "Describe what you're looking for...",
+    "buy_now": "Buy Now",
+    "compare": "Compare",
+    "add_to_wishlist": "Add to Wishlist",
+    "remove_from_wishlist": "Remove from Wishlist",
+    "price": "Price",
+    "discount": "Discount",
+    "in_stock": "In Stock",
+    "out_of_stock": "Out of Stock",
+    "reviews": "Reviews",
+    "rating": "Rating",
+    "categories": "Categories"
+  },
+  "home": {
+    "title": "AI-Powered Shopping for India",
+    "description": "Find the best products with price comparisons across Amazon, Flipkart, and more.",
+    "start_shopping": "Start Shopping",
+    "why_finez": "Why FineZ?",
+    "feature_1_title": "AI-Powered Search",
+    "feature_1_desc": "Just describe what you need. Our AI understands your intent and finds the perfect products.",
+    "feature_2_title": "Price Tracking",
+    "feature_2_desc": "Set price alerts and get notified when your favorite products drop in price.",
+    "feature_3_title": "Smart Comparisons",
+    "feature_3_desc": "Compare prices across all platforms instantly. See specs, reviews, and ratings side-by-side."
+  },
+  "search": {
+    "title": "Search Products",
+    "results_count": "Found {count} products",
+    "no_results": "No products found for your search",
+    "filters": "Filters",
+    "price_range": "Price Range",
+    "category": "Category",
+    "platform": "Platform"
+  },
+  "product": {
+    "description": "Description",
+    "specifications": "Specifications",
+    "reviews": "Reviews",
+    "price_history": "Price History",
+    "similar_products": "Similar Products",
+    "ai_summary": "FineZ AI Summary"
+  }
+}

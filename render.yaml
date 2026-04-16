@@ -1,0 +1,29 @@
+services:
+  # Backend service (Python/FastAPI)
+  - type: web
+    name: finez-backend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn -w 4 -k uvicorn.workers.UvicornWorker server:app
+    rootDir: backend
+    envVars:
+      - key: MONGO_URI
+        sync: false
+      - key: DB_NAME
+        value: finez
+      - key: SECRET_KEY
+        generateValue: true
+
+  # Frontend service (Node/React - Static Site)
+  - type: web
+    name: finez-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    publishPath: frontend/build
+    rootDir: .
+    envVars:
+      - key: REACT_APP_API_URL
+        fromService:
+          type: web
+          name: finez-backend
+          property: host

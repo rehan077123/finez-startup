@@ -1,0 +1,358 @@
+// This is your Prisma schema file.
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== USER MODELS ====================
+
+model User {
+  id String @id @default(cuid())
+  email String @unique
+  name String?
+  avatarUrl String? @map("avatar_url")
+  plan UserPlan @default(FREE)
+  referralCode String? @unique @map("referral_code")
+  referredBy String? @map("referred_by")
+  languagePreference String @default("en") @map("language_preference")
+  budgetPreferenceMin Int? @map("budget_preference_min")
+  budgetPreferenceMax Int? @map("budget_preference_max")
+  favoriteCategories String[] @default([]) @map("favorite_categories")
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  searches Search[]
+  affiliateClicks AffiliateClick[]
+  savedLists SavedList[]
+  priceAlerts PriceAlert[]
+  vendor Vendor?
+  referrals Referral[] @relation("referrer")
+  referredUsers Referral[] @relation("referred")
+  subscriptions Subscription[]
+  
+  @@index([email])
+  @@index([plan])
+  @@index([referralCode])
+  @@map("users")
+}
+
+enum UserPlan {
+  FREE
+  PRO
+  ENTERPRISE
+  
+  @@map("user_plan")
+}
+
+// ==================== SEARCH MODELS ====================
+
+model Search {
+  id String @id @default(cuid())
+  userId String? @map("user_id")
+  queryRaw String @map("query_raw")
+  queryLanguage String? @map("query_language")
+  queryTranslated String? @map("query_translated")
+  
+  intentCategory String? @map("intent_category")
+  intentBudgetMin Int? @map("intent_budget_min")
+  intentBudgetMax Int? @map("intent_budget_max")
+  intentUseCase String? @map("intent_use_case")
+  intentPriorities String[] @default([]) @map("intent_priorities")
+  intentBrandExclude String[] @default([]) @map("intent_brand_exclude")
+  
+  resultsCount Int @default(0) @map("results_count")
+  sessionId String? @map("session_id")
+  ipHash String? @map("ip_hash")
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  user User? @relation(fields: [userId], references: [id])
+  
+  @@index([userId])
+  @@index([createdAt])
+  @@index([sessionId])
+  @@fulltext([queryRaw])
+  @@map("searches")
+}
+
+// ==================== PRODUCT MODELS ====================
+
+model Product {
+  id String @id @default(cuid())
+  externalId String @map("external_id")
+  platform ProductPlatform
+  
+  name String
+  brand String?
+  category String?
+  subcategory String?
+  description String?
+  images String[] @default([])
+  specs Json?
+  
+  currentPrice Int? @map("current_price")
+  originalPrice Int? @map("original_price")
+  discountPercent Int @default(0) @map("discount_percent")
+  
+  rating Decimal? @db.Decimal(3, 2)
+  ratingCount Int @default(0) @map("rating_count")
+  inStock Boolean @default(true) @map("in_stock")
+  
+  affiliateUrl String? @map("affiliate_url")
+  affiliateTag String? @map("affiliate_tag")
+  
+  finezScore Decimal? @db.Decimal(3, 2) @map("finez_score")
+  aiSummary String? @map("ai_summary")
+  aiPros String[] @default([]) @map("ai_pros")
+  aiCons String[] @default([]) @map("ai_cons")
+  
+  verified Boolean @default(false)
+  sponsored Boolean @default(false)
+  
+  lastFetchedAt DateTime? @map("last_fetched_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  priceHistory PriceHistory[]
+  affiliateClicks AffiliateClick[]
+  priceAlerts PriceAlert[]
+  savedListItems SavedListItem[]
+  vendorProducts VendorProduct[]
+  reviewsCache ReviewsCache?
+  
+  @@unique([externalId, platform])
+  @@index([platform])
+  @@index([category])
+  @@index([brand])
+  @@index([finezScore])
+  @@index([createdAt])
+  @@fulltext([name])
+  @@map("products")
+}
+
+enum ProductPlatform {
+  AMAZON
+  FLIPKART
+  MEESHO
+  CROMA
+  MYNTRA
+  NYKAA
+  AJIO
+  
+  @@map("product_platform")
+}
+
+model PriceHistory {
+  id String @id @default(cuid())
+  productId String @map("product_id")
+  platform String?
+  price Int?
+  inStock Boolean? @map("in_stock")
+  recordedAt DateTime @default(now()) @map("recorded_at")
+  
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  @@index([productId])
+  @@index([recordedAt])
+  @@map("price_history")
+}
+
+model ReviewsCache {
+  id String @id @default(cuid())
+  productId String @unique @map("product_id")
+  platform String?
+  totalReviews Int? @map("total_reviews")
+  verifiedPurchaseCount Int? @map("verified_purchase_count")
+  aiSummary String? @map("ai_summary")
+  topPros String[] @default([]) @map("top_pros")
+  topCons String[] @default([]) @map("top_cons")
+  mostPraised String? @map("most_praised")
+  mostComplained String? @map("most_complained")
+  cachedAt DateTime @default(now()) @map("cached_at")
+  
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  @@map("reviews_cache")
+}
+
+// ==================== AFFILIATE MODELS ====================
+
+model AffiliateClick {
+  id String @id @default(cuid())
+  userId String? @map("user_id")
+  productId String @map("product_id")
+  platform String?
+  sessionId String? @map("session_id")
+  ipHash String? @map("ip_hash")
+  sourcePage String? @map("source_page")
+  
+  utmSource String? @map("utm_source")
+  utmMedium String? @map("utm_medium")
+  utmCampaign String? @map("utm_campaign")
+  
+  converted Boolean @default(false)
+  commissionEarned Int @default(0) @map("commission_earned")
+  clickedAt DateTime @default(now()) @map("clicked_at")
+  
+  user User? @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([productId])
+  @@index([sessionId])
+  @@index([clickedAt])
+  @@map("affiliate_clicks")
+}
+
+// ==================== WISHLIST MODELS ====================
+
+model SavedList {
+  id String @id @default(cuid())
+  userId String @map("user_id")
+  name String
+  description String?
+  isPublic Boolean @default(false) @map("is_public")
+  shareToken String? @unique @map("share_token")
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items SavedListItem[]
+  
+  @@index([userId])
+  @@index([shareToken])
+  @@map("saved_lists")
+}
+
+model SavedListItem {
+  id String @id @default(cuid())
+  listId String @map("list_id")
+  productId String @map("product_id")
+  notes String?
+  addedAt DateTime @default(now()) @map("added_at")
+  
+  list SavedList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  @@index([listId])
+  @@index([productId])
+  @@map("saved_list_items")
+}
+
+// ==================== PRICE ALERT MODELS ====================
+
+model PriceAlert {
+  id String @id @default(cuid())
+  userId String @map("user_id")
+  productId String @map("product_id")
+  targetPrice Int @map("target_price")
+  notified Boolean @default(false)
+  notifiedAt DateTime? @map("notified_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([productId])
+  @@index([notified])
+  @@map("price_alerts")
+}
+
+// ==================== VENDOR MODELS ====================
+
+model Vendor {
+  id String @id @default(cuid())
+  userId String @unique @map("user_id")
+  brandName String @map("brand_name")
+  logoUrl String? @map("logo_url")
+  website String?
+  description String?
+  plan VendorPlan @default(FREE)
+  monthlyBudget Int @default(0) @map("monthly_budget")
+  verified Boolean @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products VendorProduct[]
+  
+  @@index([userId])
+  @@index([verified])
+  @@index([plan])
+  @@map("vendors")
+}
+
+enum VendorPlan {
+  FREE
+  BASIC
+  PREMIUM
+  ENTERPRISE
+  
+  @@map("vendor_plan")
+}
+
+model VendorProduct {
+  id String @id @default(cuid())
+  vendorId String @map("vendor_id")
+  productId String @map("product_id")
+  sponsoredBudget Int @default(0) @map("sponsored_budget")
+  sponsoredActive Boolean @default(false) @map("sponsored_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  @@index([vendorId])
+  @@index([productId])
+  @@map("vendor_products")
+}
+
+// ==================== REFERRAL MODELS ====================
+
+model Referral {
+  id String @id @default(cuid())
+  referrerId String @map("referrer_id")
+  referredId String @map("referred_id")
+  rewardGiven Boolean @default(false) @map("reward_given")
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  referrer User @relation("referrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  referred User @relation("referred", fields: [referredId], references: [id], onDelete: Cascade)
+  
+  @@index([referrerId])
+  @@index([referredId])
+  @@map("referrals")
+}
+
+// ==================== SUBSCRIPTION MODELS ====================
+
+model Subscription {
+  id String @id @default(cuid())
+  userId String @map("user_id")
+  razorpaySubscriptionId String? @unique @map("razorpay_subscription_id")
+  plan String?
+  status SubscriptionStatus @default(PENDING)
+  currentPeriodStart DateTime? @map("current_period_start")
+  currentPeriodEnd DateTime? @map("current_period_end")
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAUSED
+  CANCELLED
+  PENDING
+  
+  @@map("subscription_status")
+}

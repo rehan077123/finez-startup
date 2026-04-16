@@ -1,0 +1,59 @@
+{
+  "name": "FineZ - Smart Product Discovery",
+  "short_name": "FineZ",
+  "description": "Discover products curated for your lifestyle with AI-powered recommendations and price alerts.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#000000",
+  "background_color": "#ffffff",
+  "categories": ["shopping", "lifestyle"],
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
+}
+  ],
+  "shortcuts": [
+    {
+      "name": "Browse Products",
+      "short_name": "Browse",
+      "description": "Browse all products and categories",
+      "url": "/products",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "My Saved Searches",
+      "short_name": "Saved",
+      "description": "View your saved searches and price alerts",
+      "url": "/saved",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
+}
